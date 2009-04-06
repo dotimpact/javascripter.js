@@ -42,6 +42,9 @@ var toolMode = 'draw';
   canvas.addEventListener("mousedown", dispatch, false);
   canvas.addEventListener("mouseup",   dispatch, false);
   canvas.addEventListener("mousemove", dispatch, false);
+  canvas.addEventListener("touchstart", dispatch, false);
+  canvas.addEventListener("touchend", dispatch, false);
+  canvas.addEventListener("touchmove", dispatch, false);
   context.strokeStyle = "black";
   context.lineCap = "round";
   context.lineJoin = "round";
@@ -67,6 +70,11 @@ function cursorPosition(e) {
 	   e.clientX - window.pageXOffset,
 	   e.clientY + window.pageYOffset
 	];
+}
+
+function setTouchPosition(e) {
+  e.clientX = e.touches[0].pageX;
+  e.clientY = e.touches[0].pageY;
 }
 
 function clearRoundedRect(X,Y,width,height,radius){
@@ -117,14 +125,13 @@ function clearRoundedRect(X,Y,width,height,radius){
 
 }
 
-
 var eventHandlers = {
 	draw: {
 		mousedown: function(e){
 		  e.preventDefault();
 		  drawing = true;
-		  point.x = e.clientX - window.pageXOffset;
-		  point.y = e.clientY + window.pageYOffset;
+		  point.x = e.clientX - (window.pageXOffset||document.documentElement.scrollLeft||document.body.scrollLeft);
+		  point.y = e.clientY + (window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop);
 		},
 		mouseup: function(e){
 		  e.preventDefault();
@@ -140,6 +147,17 @@ var eventHandlers = {
 		  context.lineTo(point.x = e.clientX - window.pageXOffset, point.y = e.clientY + window.pageYOffset);
 		  context.closePath();
 		  context.stroke();
+		},
+		touchstart: function(e){
+		  setTouchPosition(e);
+		  this.mousedown(e)
+		},
+		touchend: function(e){
+		  this.mouseup(e)
+		},
+		touchmove: function(e) {
+		  setTouchPosition(e);
+		  this.mousemove(e);
 		},
 		__leave: function () {
 			
@@ -179,10 +197,12 @@ var eventHandlers = {
 		  e.preventDefault();
 		  if(!drawing) return;
 
-		  	var [x, y] = cursorPosition(e);
+		  // var [x, y] = cursorPosition(e);
+			var pos = cursorPosition(e);
+			var x = pos[0];
+			var y = pos[1];
 			
 			this._fill();
-
 
 			clearRoundedRect(
 				this.x,
