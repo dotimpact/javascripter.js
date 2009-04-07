@@ -80,18 +80,28 @@ function setTouchPosition(e) {
 function clearRoundedRect(X,Y,width,height,radius){
 	var x1,x2,y1,y2;
 	
-	if ( width > 0 )
-		[x1, x2] = [X, X + width];
-	else
-		[x1, x2] = [X + width, X];
-	if ( height > 0 )
-		[y1, y2] = [Y, Y + height];
-	else
-		[y1, y2] = [Y + height, Y];
-
+	if ( width > 0 ) {
+		// [x1, x2] = [X, X + width];
+		x1 = X;
+		x2 = X + width;
+	} else {
+		// [x1, x2] = [X + width, X];
+		x1 = X + width;
+		x2 = X;
+	}
+	if ( height > 0 ) {
+		// [y1, y2] = [Y, Y + height];
+		y1 = Y;
+		y2 = Y + height;
+	} else {
+		// [y1, y2] = [Y + height, Y];
+		y1 = Y + height;
+		y2 = Y;
+	}
 	context.clearRect(X,Y,width,height);
 	
-	[x,y] = [x1, y1];
+	// [x,y] = [x1, y1];
+	x = x1 ; y = y1;
 	context.beginPath();
 	context.moveTo(x+radius,y);
 	context.quadraticCurveTo(x,y,x,y+radius);
@@ -99,7 +109,8 @@ function clearRoundedRect(X,Y,width,height,radius){
 	context.closePath();
 	context.fill(); 
 
-	[x,y] = [x2 - radius, y1];
+	// [x,y] = [x2 - radius, y1];
+	x = x2 - radius ; y = y1;
 	context.beginPath();
 	context.moveTo(x,y);
 	context.quadraticCurveTo(x+radius,y,x+radius,y+radius);
@@ -107,7 +118,8 @@ function clearRoundedRect(X,Y,width,height,radius){
 	context.closePath();
 	context.fill(); 
 
-	[x,y] = [x1, y2 - radius];
+	// [x,y] = [x1, y2 - radius];
+	x = x1 ; y = y2 - radius;
 	context.beginPath();
 	context.moveTo(x,y);
 	context.quadraticCurveTo(x,y+radius,x+radius,y+radius);
@@ -115,7 +127,8 @@ function clearRoundedRect(X,Y,width,height,radius){
 	context.closePath();
 	context.fill(); 
 
-	[x,y] = [x2, y2 ];
+	// [x,y] = [x2, y2 ];
+	x = x2 ; y = y2;
 	context.beginPath();
 	context.moveTo(x,y-radius);
 	context.quadraticCurveTo(x,y,x-radius,y);
@@ -130,8 +143,8 @@ var eventHandlers = {
 		mousedown: function(e){
 		  e.preventDefault();
 		  drawing = true;
-		  point.x = e.clientX - (window.pageXOffset||document.documentElement.scrollLeft||document.body.scrollLeft);
-		  point.y = e.clientY + (window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop);
+		  point.x = e.clientX - window.pageXOffset;
+		  point.y = e.clientY + window.pageYOffset;
 		},
 		mouseup: function(e){
 		  e.preventDefault();
@@ -149,6 +162,7 @@ var eventHandlers = {
 		  context.stroke();
 		},
 		touchstart: function(e){
+		  if(e.touches.length > 1) return;
 		  setTouchPosition(e);
 		  this.mousedown(e)
 		},
@@ -158,6 +172,8 @@ var eventHandlers = {
 		touchmove: function(e) {
 		  setTouchPosition(e);
 		  this.mousemove(e);
+		},
+		__enter: function() {
 		},
 		__leave: function () {
 			
@@ -198,9 +214,9 @@ var eventHandlers = {
 		  if(!drawing) return;
 
 		  // var [x, y] = cursorPosition(e);
-			var pos = cursorPosition(e);
-			var x = pos[0];
-			var y = pos[1];
+		  var pos = cursorPosition(e);
+		  var x = pos[0];
+		  var y = pos[1];
 			
 			this._fill();
 
@@ -212,6 +228,17 @@ var eventHandlers = {
 				5
 			);
 
+		},
+		touchstart : function(e) {
+		  setTouchPosition(e);
+		  this.mousedown(e);
+		},
+		touchend : function(e) {
+		  this.mouseup(e);
+		},
+		touchmove : function(e) {
+		  setTouchPosition(e);
+		  this.mousemove(e);
 		},
 		__leave: function () {
 			
